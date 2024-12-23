@@ -1,0 +1,100 @@
+﻿    @page "/accounts"
+    @using SokolovaaaJournal.Data
+
+<h3>Список Учетных Записей</h3>
+
+@if (accounts == null)
+{
+    <p><em>Загрузка...</em></p>
+}
+else if (accounts.Count == 0)
+{
+    <p><em>Нет доступных учетных записей.</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Имя</th>
+                <th>Отдел</th>
+                <th>Баланс</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var account in accounts)
+            {
+                <tr>
+                    <td>@account.Id</td>
+                    <td>@account.Name</td>
+                    <td>@account.Department</td>
+                    <td>@account.Balance</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<h4>Добавить новую учетную запись</h4>
+<EditForm Model="@newAccount" OnValidSubmit="@HandleAddValidSubmit" FormName="addAccountForm">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label>Имя:</label>
+        <InputText @bind-Value="@newAccount.Name" class="form-control" required />
+    </div>
+
+    <div class="form-group">
+        <label>Отдел:</label>
+        <InputText @bind-Value="@newAccount.Department" class="form-control" required />
+    </div>
+
+    <div class="form-group">
+        <label>Баланс:</label>
+        <InputNumber @bind-Value="@newAccount.Balance" class="form-control" required />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Создать</button>
+</EditForm>
+
+@code {
+    private List<Account> accounts;
+    private Account newAccount = new Account();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(500);
+        accounts = new List<Account>
+            {
+                new Account { Id = 1, Name = "Иванов Иван", Department = "Отдел продаж", Balance = 1000 },
+                new Account { Id = 2, Name = "Петрова Анна", Department = "Бухгалтерия", Balance = 2500 },
+                new Account { Id = 3, Name = "Сидоров Сергей", Department = "IT", Balance = 1500 }
+            };
+    }
+
+    private void HandleAddValidSubmit()
+    {
+        Console.WriteLine("HandleAddValidSubmit called for account");
+        Console.WriteLine($"newAccount before id assign: Id = {newAccount.Id}, Name = {newAccount.Name}, Department = {newAccount.Department}, Balance = {newAccount.Balance}");
+        newAccount.Id = accounts.Count > 0 ? accounts.Max(a => a.Id) + 1 : 1;
+        Console.WriteLine($"newAccount before add: Id = {newAccount.Id}, Name = {newAccount.Name}, Department = {newAccount.Department}, Balance = {newAccount.Balance}");
+        accounts.Add(newAccount);
+        Console.WriteLine($"accounts after add: Count = {accounts.Count}");
+        newAccount = new Account();
+        Console.WriteLine($"newAccount after reset: Id = {newAccount.Id}, Name = {newAccount.Name}, Department = {newAccount.Department}, Balance = {newAccount.Balance}");
+        StateHasChanged();
+    }
+    }
+
+
+
+
+
+
+
+
+
+
+

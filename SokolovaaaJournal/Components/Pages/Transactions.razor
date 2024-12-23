@@ -1,0 +1,128 @@
+﻿       @page "/transactions"
+    @using SokolovaaaJournal.Data
+
+    <h3>Транзакции</h3>
+
+    @if (transactions == null)
+    {
+        <p><em>Загрузка...</em></p>
+    }
+    else if (transactions.Count == 0)
+    {
+        <p><em>Нет доступных транзакций.</em></p>
+    }
+    else
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Дата</th>
+                    <th>Сумма</th>
+                    <th>Тип</th>
+                    <th>Описание</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var transaction in transactions)
+                {
+                    <tr>
+                        <td>@transaction.Id</td>
+                        <td>@transaction.Date</td>
+                        <td>@transaction.Amount</td>
+                        <td>@transaction.TransactionType</td>
+                        <td>@transaction.Description</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+    <h4>Добавить транзакцию</h4>
+    <EditForm Model="@newTransaction" OnValidSubmit="@HandleAddValidSubmit" FormName="addTransactionForm">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+         <div class="form-group">
+            <label>Учетная запись:</label>
+            <InputSelect @bind-Value="@newTransaction.AccountId" class="form-control" required>
+                 @if (accounts != null)
+                {
+                    @foreach (var account in accounts)
+                    {
+                        <option value="@account.Id">@account.Name (@account.Department)</option>
+                    }
+                }
+            </InputSelect>
+        </div>
+
+        <div class="form-group">
+            <label>Дата:</label>
+            <InputDate @bind-Value="@newTransaction.Date" class="form-control" required />
+        </div>
+
+        <div class="form-group">
+            <label>Сумма:</label>
+            <InputNumber @bind-Value="@newTransaction.Amount" class="form-control" required />
+        </div>
+
+        <div class="form-group">
+            <label>Тип:</label>
+            <InputSelect @bind-Value="@newTransaction.TransactionType" class="form-control" required>
+                <option value="Начисление">Начисление</option>
+                <option value="Списание">Списание</option>
+            </InputSelect>
+        </div>
+
+        <div class="form-group">
+        <label>Описание:</label>
+        <InputText @bind-Value="@newTransaction.Description" class="form-control" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Добавить</button>
+</EditForm>
+
+@code {
+    private List<Transaction> transactions;
+    private Transaction newTransaction = new Transaction();
+    private List<Account> accounts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.Delay(500);
+        transactions = new List<Transaction>
+            {
+                new Transaction { Id = 1, AccountId = 1, Date = DateTime.Now.AddDays(-1), Amount = 500, TransactionType = "Начисление", Description = "Зарплата" },
+                new Transaction { Id = 2, AccountId = 2, Date = DateTime.Now, Amount = -200, TransactionType = "Списание", Description = "Оплата за интернет" },
+                new Transaction { Id = 3, AccountId = 1, Date = DateTime.Now.AddDays(-2), Amount = 100, TransactionType = "Начисление", Description = "Премия" }
+            };
+        accounts = new List<Account>
+            {
+                new Account { Id = 1, Name = "Иванов Иван", Department = "Отдел продаж", Balance = 1000 },
+                new Account { Id = 2, Name = "Петрова Анна", Department = "Бухгалтерия", Balance = 2500 },
+                new Account { Id = 3, Name = "Сидоров Сергей", Department = "IT", Balance = 1500 }
+            };
+
+    }
+
+    private void HandleAddValidSubmit()
+    {
+        Console.WriteLine("HandleAddValidSubmit called for transaction");
+        Console.WriteLine($"newTransaction before id assign: Id = {newTransaction.Id}, AccountId = {newTransaction.AccountId}, Date = {newTransaction.Date}, Amount = {newTransaction.Amount}, TransactionType = {newTransaction.TransactionType}, Description = {newTransaction.Description}");
+        newTransaction.Id = transactions.Count > 0 ? transactions.Max(a => a.Id) + 1 : 1;
+        Console.WriteLine($"newTransaction before add: Id = {newTransaction.Id}, AccountId = {newTransaction.AccountId}, Date = {newTransaction.Date}, Amount = {newTransaction.Amount}, TransactionType = {newTransaction.TransactionType}, Description = {newTransaction.Description}");
+        transactions.Add(newTransaction);
+        Console.WriteLine($"transactions after add: Count = {transactions.Count}");
+        newTransaction = new Transaction();
+        Console.WriteLine($"newTransaction after add: Id = {newTransaction.Id}, AccountId = {newTransaction.AccountId}, Date = {newTransaction.Date}, Amount = {newTransaction.Amount}, TransactionType = {newTransaction.TransactionType}, Description = {newTransaction.Description}");
+        StateHasChanged();
+    }
+    }
+
+
+
+
+
+
+
+
